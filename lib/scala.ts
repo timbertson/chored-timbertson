@@ -5,7 +5,7 @@ import bump from '../deps/bump.ts'
 import * as Update from '../deps/self_update.ts'
 import * as git from '../deps/git.ts'
 import * as Docker from '../deps/docker.ts'
-import { Partial, merge, trimIndent, notNull } from '../deps/util.ts'
+import { Partial, merge, trimIndent } from '../deps/util.ts'
 
 export interface Options {
 	repo : string,
@@ -28,11 +28,11 @@ export interface DockerOptions {
 
 let jdkVersion = "11.0.13"
 
-let sbtVersion = "1.5.7"
+let defaultSbtVersion = "1.5.7"
 
 let scalaVersion = "2.13.7"
 
-const defaultDockerOptions: DockerOptions = {
+export const defaultDockerOptions: DockerOptions = {
 	cmd: [],
 	workdir: "/app",
 	initRequires: ["project"],
@@ -49,7 +49,7 @@ function dockerChores(projectOpts: Options) {
 
 	const sbtImage = Docker.image(
 			"hseeberger/scala-sbt",
-			`${jdkVersion}_${sbtVersion}_${projectOpts.scalaVersion ?? scalaVersion}`
+			`${jdkVersion}_${defaultSbtVersion}_${projectOpts.scalaVersion ?? scalaVersion}`
 		)
 
 	function copyFiles(paths: string[]): Docker.Step[] {
@@ -64,21 +64,38 @@ function dockerChores(projectOpts: Options) {
 		}
 	}
 
+	const builder = Docker.stage('builder', { from: sbtImage })
+		.workdir(opts.workdir)
+		.pushAll(opts.builderSetup)
+		.pushAll(runSbt(opts.initRequires, opts.initTargets))
+		.pushAll(runSbt(opts.updateRequires, opts.updateTargets))
+		.pushAll(runSbt(opts.buildRequires, opts.buildTargets))
+
 	const spec: Docker.Spec = {
 		url: `ghcr.io/timbertson/${projectOpts.repo}`,
-		stages: [
-			Docker.stage('builder', { from: sbtImage })
-				.workdir(opts.workdir)
-				.pushAll(opts.builderSetup)
-				.pushAll(runSbt(opts.initRequires, opts.initTargets))
-				.pushAll(runSbt(opts.updateRequires, opts.updateTargets))
-				.pushAll(runSbt(opts.buildRequires, opts.buildTargets))
-		]
+		stages: [ builder ]
 	}
 
 	return {
+		async dockerLogin(opts: { user: string, token: string }) {
+			await run([
+				'docker', 'login', 'ghcr.io', '-u', opts.user, '--password-stdin'
+			], { stdin: { contents: opts.token } })
+		},
+
 		async docker(_: {}) {
 			await Docker.standardBuild(spec)
+		},
+
+		async dockerRun(opts: { args?: string[] }) {
+			await Docker.run({
+				image: Docker.imageForStage(spec, 'last'),
+				cmd: opts.args,
+				workDir: '/workspace',
+				bindMounts: [
+					{ path: Deno.cwd(), containerPath: '/workspace' },
+				]
+			})
 		},
 
 		dockerPrint(_: {}) {
@@ -111,7 +128,7 @@ function files(opts: Options): Render.File[] {
 			}
 		`)),
 		new Render.CFile('release.sbt', trimIndent(`
-			ThisBuild / scalaVersion := "${opts.scalaVersion}"
+			ThisBuild / scalaVersion := "${opts.scalaVersion ?? scalaVersion}"
 			ThisBuild / organization := "net.gfxmonk"
 			ThisBuild / homepage := Some(url(s"https://github.com/timbertson/${opts.repo}"))
 			ThisBuild / scmInfo := Some(
@@ -126,7 +143,7 @@ function files(opts: Options): Render.File[] {
 			${opts.strictPluginOverride ?? 'addSbtPlugin("net.gfxmonk" % "sbt-strict-scope" % "3.1.0")'}
 		`)),
 
-		new Render.CFile('project/build.properties', `sbt.version=${sbtVersion}`),
+		new Render.CFile('project/build.properties', `sbt.version=${defaultSbtVersion}`),
 
 		new Render.TextFile('.dockerignore', trimIndent(`
 			.git
@@ -135,7 +152,8 @@ function files(opts: Options): Render.File[] {
 
 		new Render.YAMLFile('.github/workflows/ci.yml', Workflow.ciWorkflow(
 			Workflow.chores([
-				{ name: 'ci' },
+				{ name: 'dockerLogin', opts: { user: Workflow.expr('github.actor'), token: Workflow.secret('GITHUB_TOKEN') } },
+				{ name: 'ci', opts: { docker: true } },
 				{ name: 'requireClean' },
 			])
 		)),
@@ -143,9 +161,7 @@ function files(opts: Options): Render.File[] {
 		new Render.YAMLFile('.github/workflows/self-update.yml', (():Workflow.Workflow => ({
 			on: {
 				workflow_dispatch: {},
-				schedule: {
-					cron: '0 0 * * 1,4'
-				},
+				schedule: [ { cron: '0 0 * * 1,4' } ],
 			},
 			jobs: {
 				'self-update': {
@@ -173,9 +189,19 @@ export default function(opts: Options) {
 			await git.requireClean()
 		},
 
-		async ci(_: {}): Promise<void> {
+		async ci(opts: { docker?: boolean }): Promise<void> {
+			const runTests = async () => {
+				const sbtCommand = ['sbt', 'strict compile', 'test']
+				if (opts.docker) {
+					await Self.docker({})
+					await Self.dockerRun({ args: sbtCommand })
+				} else {
+					await run(sbtCommand)
+				}
+			}
+
 			await Promise.all([
-				run(['sbt', 'strict compile', 'test']),
+				runTests(),
 				Self.render({}),
 			])
 		},

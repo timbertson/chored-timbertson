@@ -50,7 +50,7 @@ _main() {
 		exec "$DENO" "$@"
 	fi
 
-	CHORED_MAIN_FALLBACK='file:///Users/tcuthbertson/Code/scratch/chored/main.ts'
+	CHORED_MAIN_FALLBACK='file:///Users/tcuthbertson/Code/scratch/chored/lib/main.ts'
 
 	exec "$DENO" run "${DENO_ARGV[@]}" "${CHORED_MAIN:-$CHORED_MAIN_FALLBACK}" "$@"
 
