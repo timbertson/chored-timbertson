@@ -128,13 +128,35 @@ function files(opts: Options): Render.File[] {
 			}
 		`)),
 		new Render.CFile('release.sbt', trimIndent(`
+			import scala.util.Try
+
 			ThisBuild / scalaVersion := "${opts.scalaVersion ?? scalaVersion}"
 			ThisBuild / organization := "net.gfxmonk"
+			sonatypeProfileName := "net.gfxmonk"
+
+			ThisBuild / version := Try(IO.read(new File("VERSION")).trim()).getOrElse("0.0.0-SNAPSHOT")
 			ThisBuild / homepage := Some(url(s"https://github.com/timbertson/${opts.repo}"))
 			ThisBuild / scmInfo := Some(
 				ScmInfo(
 					url("https://github.com/timbertson/${opts.repo}"),
 					s"scm:git@github.com:timbertson/${opts.repo}.git"
+				)
+			)
+
+			credentials += Credentials(
+				"Sonatype Nexus Repository Manager",
+				"oss.sonatype.org",
+				"timbertson",
+				sys.env.getOrElse("SONATYPE_PASSWORD", "******"))
+
+			ThisBuild / licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
+
+			ThisBuild / developers := List(
+				Developer(
+					id    = "gfxmonk",
+					name  = "Tim Cuthbertson",
+					email = "tim@gfxmonk.net",
+					url   = url("http://gfxmonk.net")
 				)
 			)
 		`)),
