@@ -1,1 +1,1 @@
-export * from 'https://raw.githubusercontent.com/timbertson/chored/c89447a118d8e2150de789a603716a87bd3d5559/lib/util.ts#main'
+export * from 'https://raw.githubusercontent.com/timbertson/chored/d14d21c74825db0ebdb6ef25cd37e26ab65d57e3/lib/util.ts#main'

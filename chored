@@ -8,7 +8,7 @@ _main() {
 	fi
 	if [ -z "${DENO:-}" ]; then
 		CHORED_CACHE="${CHORED_CACHE:-$HOME/.cache/chored}"
-		DENO_VERSION="${DENO_VERSION:-1.18.0}"
+		DENO_VERSION="${DENO_VERSION:-1.22.0}"
 
 		PLATFORM_ARCH=""
 		# Add more as needed
@@ -33,7 +33,7 @@ _main() {
 		fi
 	fi
 
-	DENO_ARGV=(--unstable --allow-all)
+	DENO_ARGV=(--unstable --allow-all --check=local)
 
 	here="$PWD"
 	LOCKFILE="choredefs/.lock.json"
@@ -50,7 +50,7 @@ _main() {
 		exec "$DENO" "$@"
 	fi
 
-	CHORED_MAIN_FALLBACK='file:///Users/tcuthbertson/Code/scratch/chored/lib/main.ts'
+	CHORED_MAIN_FALLBACK='https://raw.githubusercontent.com/timbertson/chored/d14d21c74825db0ebdb6ef25cd37e26ab65d57e3/lib/main.ts'
 
 	exec "$DENO" run "${DENO_ARGV[@]}" "${CHORED_MAIN:-$CHORED_MAIN_FALLBACK}" "$@"
 
