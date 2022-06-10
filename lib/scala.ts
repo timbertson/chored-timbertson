@@ -6,6 +6,7 @@ import * as Update from '../deps/self_update.ts'
 import * as git from '../deps/git.ts'
 import * as Docker from '../deps/docker.ts'
 import { Partial, merge, trimIndent } from '../deps/util.ts'
+import { Options as ImportMapOptions, importMap } from '../deps/localImportMap.ts'
 
 export interface Options {
 	repo : string,
@@ -251,13 +252,13 @@ export default function(opts: Options) {
 		},
 
 		async render(_: {}) {
-			Render.render(files(opts), {
-				localDeps: {
-					sources: {
-						chored: '../chored',
-						"chored-timbertson": '../chored-timbertson',
-					}
-				}
+			await Render.render(files(opts))
+		},
+
+		async localImportMap(opts: ImportMapOptions) {
+			await importMap(opts, {
+				chored: '../chored',
+				"chored-timbertson": '../chored-timbertson',
 			})
 		},
 
