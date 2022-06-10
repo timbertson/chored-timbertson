@@ -178,7 +178,7 @@ function files(opts: Options): Render.File[] {
 
 		new Render.YAMLFile('.github/workflows/ci.yml', Workflow.ciWorkflow(
 			Workflow.chores([
-				{ name: 'dockerLogin', opts: { user: Workflow.expr('github.actor'), token: Workflow.secret('GITHUB_TOKEN') } },
+				{ module: 'docker', name: 'login', opts: { user: Workflow.expr('github.actor'), token: Workflow.secret('GITHUB_TOKEN') } },
 				{ name: 'ci', opts: { docker: true } },
 				{ name: 'requireClean' },
 			])
