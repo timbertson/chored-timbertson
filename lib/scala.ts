@@ -77,17 +77,21 @@ function dockerChores(projectOpts: Options) {
 	}
 
 	return {
-		async dockerLogin(opts: { user: string, token: string }) {
+		async login(opts: { user: string, token: string }) {
 			await run([
 				'docker', 'login', 'ghcr.io', '-u', opts.user, '--password-stdin'
 			], { stdin: { contents: opts.token } })
 		},
 
-		async docker(_: {}) {
+		async build(_: {}) {
 			await Docker.standardBuild(spec)
 		},
 
-		async dockerRun(opts: { args?: string[] }) {
+		async default(_: {}) {
+			await Docker.standardBuild(spec)
+		},
+
+		async run(opts: { args?: string[] }) {
 			await Docker.run({
 				image: Docker.imageForStage(spec, 'last'),
 				cmd: opts.args,
@@ -98,7 +102,7 @@ function dockerChores(projectOpts: Options) {
 			})
 		},
 
-		dockerPrint(_: {}) {
+		print(_: {}) {
 			console.log(Docker.render(spec))
 		}
 	}
@@ -189,7 +193,7 @@ function files(opts: Options): Render.File[] {
 				'self-update': {
 					'runs-on': 'ubuntu-latest',
 					steps: Workflow.chores([
-						{ name: 'selfUpdate', opts: { mode: 'pr' } },
+						{ name: 'selfUpdate', opts: { mode: 'pr', githubToken: Workflow.secret('GITHUB_TOKEN') } },
 					]),
 				},
 			},
@@ -201,7 +205,7 @@ function files(opts: Options): Render.File[] {
 
 export default function(opts: Options) {
 	const Self = {
-		...dockerChores(opts),
+		docker: dockerChores(opts),
 
 		async release(_: {}): Promise<void> {
 			run(['sbt', 'publishSigned', 'sonatypeBundleRelease'])
@@ -215,8 +219,8 @@ export default function(opts: Options) {
 			const runTests = async () => {
 				const sbtCommand = ['sbt', 'strict compile', 'test']
 				if (opts.docker) {
-					await Self.docker({})
-					await Self.dockerRun({ args: sbtCommand })
+					await Self.docker.build({})
+					await Self.docker.run({ args: sbtCommand })
 				} else {
 					await run(sbtCommand)
 				}
@@ -247,7 +251,14 @@ export default function(opts: Options) {
 		},
 
 		async render(_: {}) {
-			Render.render(files(opts))
+			Render.render(files(opts), {
+				localDeps: {
+					sources: {
+						chored: '../chored',
+						"chored-timbertson": '../chored-timbertson',
+					}
+				}
+			})
 		},
 
 		bump,
