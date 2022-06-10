@@ -1,4 +1,4 @@
-import * as Render from 'https://raw.githubusercontent.com/timbertson/chored/c918729e8dd22c26518153bdaa0437598ac0d5e3/lib/render.ts#main'
+import * as Render from 'https://raw.githubusercontent.com/timbertson/chored/4adfc96a523295642e0b5b0404eadc776b59202f/lib/render.ts#main'
 import chores from '../lib/scala.ts'
 
 async function render(opts: {}) {
