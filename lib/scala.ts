@@ -27,11 +27,11 @@ export interface DockerOptions {
 	builderSetup: Array<Docker.Step>,
 }
 
-let jdkVersion = "11.0.13"
+const jdkVersion = "11.0.13"
 
-let defaultSbtVersion = "1.5.7"
+const defaultSbtVersion = "1.5.7"
 
-let scalaVersion = "2.13.7"
+const scalaVersion = "2.13.7"
 
 export const defaultDockerOptions: DockerOptions = {
 	cmd: [],
@@ -58,7 +58,7 @@ function dockerChores(projectOpts: Options) {
 	}
 
 	function runSbt(deps: string[], targets: string[]): Docker.Step[] {
-		if (targets.length ==- 0) {
+		if (targets.length === 0) {
 			return []
 		} else {
 			return copyFiles(deps).concat([Docker.Step.run(['sbt'].concat(targets))])
@@ -209,7 +209,7 @@ export default function(opts: Options) {
 		docker: dockerChores(opts),
 
 		async release(_: {}): Promise<void> {
-			run(['sbt', 'publishSigned', 'sonatypeBundleRelease'])
+			await run(['sbt', 'publishSigned', 'sonatypeBundleRelease'])
 		},
 
 		async requireClean(_: {}): Promise<void> {
@@ -235,7 +235,7 @@ export default function(opts: Options) {
 		
 		async selfUpdate(updateOpts: { mode?: Update.Mode, githubToken?: string }): Promise<void> {
 			await Update.standardSelfUpdate({
-				mode: updateOpts.mode ?? 'noop',
+				mode: updateOpts.mode ?? 'commit',
 				commitMessage: 'chore: update',
 				pr: {
 					baseBranch: 'main',
@@ -246,7 +246,6 @@ export default function(opts: Options) {
 				},
 				update: (async () => {
 					await Self.bump({})
-					await Self.render({})
 				}),
 			})
 		},
