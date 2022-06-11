@@ -243,6 +243,10 @@ export default function(opts: Options) {
 					githubToken: updateOpts.githubToken,
 					prTitle: '[bot] self-update',
 					prBody: ':robot:',
+					repository: {
+						owner: 'timbertson',
+						name: opts.repo
+					}
 				},
 				update: (async () => {
 					await Self.bump({})

@@ -1,4 +1,4 @@
-import * as Render from 'https://raw.githubusercontent.com/timbertson/chored/dbddf21a43be2d134a4f5d491004f3282b1a07a7/lib/render.ts#main'
+import * as Render from '../deps/render.ts'
 import chores from '../lib/scala.ts'
 
 async function render(_: {}) {
