@@ -8,10 +8,14 @@ import * as Docker from '../deps/docker.ts'
 import { Partial, merge, trimIndent } from '../deps/util.ts'
 import { Options as ImportMapOptions, importMap } from '../deps/localImportMap.ts'
 
+type ScalaMajor = 2 | 3
+
 export interface Options {
 	repo : string,
 	docker?: Partial<DockerOptions>,
-	scalaVersion?: string,
+	scalaMajorVersions?: Array<ScalaMajor>,
+	scala2Version?: string,
+	scala3Version?: string,
 	strictPluginOverride?: string,
 }
 
@@ -31,7 +35,25 @@ const jdkVersion = "11.0.13"
 
 const defaultSbtVersion = "1.5.7"
 
-const scalaVersion = "2.13.7"
+const defaultScala2Version = "2.13.7"
+
+const defaultScala3Version = "3.2.2"
+
+function getScalaVersion(m: ScalaMajor, opts: Options): string {
+	if (m == 3) {
+		return opts.scala3Version ?? defaultScala3Version
+	} else {
+		return opts.scala2Version ?? defaultScala2Version
+	}
+}
+
+function scalaVersionVal(m: ScalaMajor, opts: Options): string {
+	return `val scala${m}Version = "${getScalaVersion(m, opts)}"`
+}
+
+function scalaVersions(opts: Options): Array<string> {
+	return (opts.scalaMajorVersions ?? [2]).map(m => getScalaVersion(m, opts))
+}
 
 export const defaultDockerOptions: DockerOptions = {
 	cmd: [],
@@ -50,7 +72,7 @@ function dockerChores(projectOpts: Options) {
 
 	const sbtImage = Docker.image(
 			"hseeberger/scala-sbt",
-			`${jdkVersion}_${defaultSbtVersion}_${projectOpts.scalaVersion ?? scalaVersion}`
+			`${jdkVersion}_${defaultSbtVersion}_${scalaVersions(projectOpts)[0]}`
 		)
 
 	function copyFiles(paths: string[]): Docker.Step[] {
@@ -130,12 +152,14 @@ function files(opts: Options): Render.File[] {
 					publishMavenStyle := true,
 					Test / publishArtifact := false,
 				)
+
+				${(opts.scalaMajorVersions ?? []).map(m => scalaVersionVal(m, opts)).join("\n				")}
 			}
 		`)),
 		new Render.CFile('release.sbt', trimIndent(`
 			import scala.util.Try
 
-			ThisBuild / scalaVersion := "${opts.scalaVersion ?? scalaVersion}"
+			ThisBuild / scalaVersion := "${scalaVersions(opts)[0]}"
 			ThisBuild / organization := "net.gfxmonk"
 			sonatypeProfileName := "net.gfxmonk"
 
@@ -230,7 +254,7 @@ export default function(opts: Options) {
 		docker: dockerChores(opts),
 
 		async release(_: {}): Promise<void> {
-			await run(['sbt', 'publishSigned', 'sonatypeBundleRelease'], { env: { 'SNAPSHOT': 'false' } })
+			await run(['sbt', '++publishSigned', 'sonatypeBundleRelease'], { env: { 'SNAPSHOT': 'false' } })
 		},
 
 		async requireClean(_: {}): Promise<void> {
