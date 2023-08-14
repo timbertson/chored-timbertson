@@ -31,13 +31,13 @@ export interface DockerOptions {
 	builderSetup: Array<Docker.Step>,
 }
 
-const jdkVersion = "11.0.13"
+const jdkVersion = "11.0.28"
 
 const defaultSbtVersion = "1.5.7"
 
-const defaultScala2Version = "2.13.7"
+const defaultScala2Version = "2.13.11"
 
-const defaultScala3Version = "3.2.2"
+const defaultScala3Version = "3.3.0"
 
 function getScalaVersion(m: ScalaMajor, opts: Options): string {
 	if (m == 3) {
