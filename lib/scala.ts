@@ -31,7 +31,7 @@ export interface DockerOptions {
 	builderSetup: Array<Docker.Step>,
 }
 
-const jdkVersion = "11.0.17"
+const jdkTag = "eclipse-temurin-jammy-17.0.5_8"
 
 const defaultSbtVersion = "1.9.3"
 
@@ -71,8 +71,8 @@ function dockerChores(projectOpts: Options) {
 	const opts = merge(defaultDockerOptions, projectOpts?.docker ?? {})
 
 	const sbtImage = Docker.image(
-			"hseeberger/scala-sbt",
-			`${jdkVersion}_${defaultSbtVersion}_${scalaVersions(projectOpts)[0]}`
+			"sbtscala/scala-sbt",
+			`${jdkTag}_${defaultSbtVersion}_${scalaVersions(projectOpts)[0]}`
 		)
 
 	function copyFiles(paths: string[]): Docker.Step[] {
