@@ -31,9 +31,9 @@ export interface DockerOptions {
 	builderSetup: Array<Docker.Step>,
 }
 
-const jdkVersion = "11.0.28"
+const jdkVersion = "11.0.17"
 
-const defaultSbtVersion = "1.5.7"
+const defaultSbtVersion = "1.9.3"
 
 const defaultScala2Version = "2.13.11"
 
