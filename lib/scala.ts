@@ -33,11 +33,11 @@ export interface DockerOptions {
 
 const jdkTag = "eclipse-temurin-jammy-17.0.5_8"
 
-const defaultSbtVersion = "1.9.3"
+const defaultSbtVersion = "1.9.9"
 
-const defaultScala2Version = "2.13.11"
+const defaultScala2Version = "2.13.14"
 
-const defaultScala3Version = "3.3.0"
+const defaultScala3Version = "3.4.2"
 
 function getScalaVersion(m: ScalaMajor, opts: Options): string {
 	if (m == 3) {
