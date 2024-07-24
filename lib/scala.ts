@@ -5,7 +5,7 @@ import bump from '../deps/bump.ts'
 import * as Update from '../deps/self_update.ts'
 import * as git from '../deps/git.ts'
 import * as Docker from '../deps/docker.ts'
-import { Partial, merge, trimIndent } from '../deps/util.ts'
+import { merge, trimIndent } from '../deps/util.ts'
 import { Options as ImportMapOptions, importMap } from '../deps/localImportMap.ts'
 
 type ScalaMajor = 2 | 3
