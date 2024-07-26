@@ -31,9 +31,9 @@ export interface DockerOptions {
 	builderSetup: Array<Docker.Step>,
 }
 
-const jdkTag = "eclipse-temurin-jammy-17.0.5_8"
+const jdkTag = "eclipse-temurin-jammy-17.0.10_7"
 
-const defaultSbtVersion = "1.9.9"
+const defaultSbtVersion = "1.10.1"
 
 const defaultScala2Version = "2.13.14"
 
