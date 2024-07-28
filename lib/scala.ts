@@ -196,7 +196,7 @@ function files(opts: Options): Render.File[] {
 			credentials += Credentials(
 				"Sonatype Nexus Repository Manager",
 				"oss.sonatype.org",
-				"timbertson",
+				sys.env.getOrElse("SONATYPE_USER", "nobody"),
 				sys.env.getOrElse("SONATYPE_PASSWORD", "******"))
 
 			ThisBuild / licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.php"))
