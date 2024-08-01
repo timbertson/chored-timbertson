@@ -134,14 +134,17 @@ function dockerChores(projectOpts: Options) {
 function files(opts: Options): Render.File[] {
 	return [
 		new Render.CFile('project/sonatype.sbt', trimIndent(`
-			addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.2.1")
+			addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
 			addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.11.1")
 		`)),
 		new Render.CFile('project/src/main/scala/PublishSettings.scala', trimIndent(`
 			import sbt._
 			import Keys._
 			import xerial.sbt.Sonatype.SonatypeKeys._
-			
+			import xerial.sbt.Sonatype.sonatypeCentralHost
+
+			ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
+
 			object ScalaProject {
 				val hiddenProjectSettings = Seq(
 					publish / skip := true,
