@@ -134,8 +134,8 @@ function dockerChores(projectOpts: Options) {
 function files(opts: Options): Render.File[] {
 	return [
 		new Render.CFile('project/sonatype.sbt', trimIndent(`
-			addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1")
-			addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.7")
+			addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.2.1")
+			addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.11.1")
 		`)),
 		new Render.CFile('project/src/main/scala/PublishSettings.scala', trimIndent(`
 			import sbt._
