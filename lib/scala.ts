@@ -214,7 +214,7 @@ function files(opts: Options): Render.File[] {
 			)
 		`)),
 		new Render.CFile('project/strict.sbt', trimIndent(`
-			addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.20")
+			addSbtPlugin("org.typelevel" % "sbt-tpolecat" % "0.5.1")
 			${opts.strictPluginOverride ?? 'addSbtPlugin("net.gfxmonk" % "sbt-strict-scope" % "3.1.0")'}
 		`)),
 
