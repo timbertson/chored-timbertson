@@ -141,9 +141,6 @@ function files(opts: Options): Render.File[] {
 			import sbt._
 			import Keys._
 			import xerial.sbt.Sonatype.SonatypeKeys._
-			import xerial.sbt.Sonatype.sonatypeCentralHost
-
-			ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 
 			object ScalaProject {
 				val hiddenProjectSettings = Seq(
@@ -161,10 +158,13 @@ function files(opts: Options): Render.File[] {
 		`)),
 		new Render.CFile('release.sbt', trimIndent(`
 			import scala.util.Try
+			import xerial.sbt.Sonatype.sonatypeCentralHost
+
 
 			ThisBuild / scalaVersion := "${scalaVersions(opts)[0]}"
 			ThisBuild / organization := "net.gfxmonk"
-			sonatypeProfileName := "net.gfxmonk"
+			ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
+			ThisBuild / sonatypeProfileName := "net.gfxmonk"
 
 			ThisBuild / version := {
 				def make(v: String, snapshot: Boolean) = if (snapshot) v + "-SNAPSHOT" else v
